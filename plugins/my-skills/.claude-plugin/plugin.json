@@ -1,0 +1,12 @@
+{
+  "name": "my-skills",
+  "description": "30 curated engineering, design, and comprehension skills vendored from nine upstream repositories",
+  "version": "0.1.0",
+  "author": {
+    "name": "digitalmick"
+  },
+  "homepage": "https://github.com/digitalmick/claude-skills",
+  "repository": "https://github.com/digitalmick/claude-skills",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "debugging", "design", "diagrams", "code-review"]
+}

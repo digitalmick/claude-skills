@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-skills",
+  "description": "Curated Claude Code skills, bundled for one-command install",
+  "owner": {
+    "name": "digitalmick"
+  },
+  "plugins": [
+    {
+      "name": "my-skills",
+      "description": "30 curated engineering, design, and comprehension skills vendored from nine upstream repositories",
+      "source": "./plugins/my-skills",
+      "version": "0.1.0",
+      "category": "development",
+      "tags": ["skills", "workflow", "design", "diagrams", "code-quality"]
+    }
+  ]
+}
