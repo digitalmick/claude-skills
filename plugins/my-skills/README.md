@@ -1,6 +1,6 @@
 # my-skills
 
-30 curated skills for Claude Code, vendored from nine upstream projects.
+37 curated skills for Claude Code, vendored from nine upstream projects.
 
 ```
 /plugin marketplace add digitalmick/claude-skills

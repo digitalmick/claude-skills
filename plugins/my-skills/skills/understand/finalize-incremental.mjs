@@ -20,6 +20,7 @@ import {
   readFileSync,
   realpathSync,
   renameSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { validateIncrementalSymbols, formatSymbolReport } from './validate-incremental-symbols.mjs';
@@ -146,8 +147,25 @@ function normalizeLayerShape(rawLayers, nodeIds, pathIndex) {
       nodeIds: refs
         .map(ref => resolveNodeRef(ref, nodeIds, pathIndex))
         .filter(Boolean),
+      ...normalizeContainerLabels(layer?.containerLabels, nodeIds, pathIndex),
     };
   });
+}
+
+// Keeps optional AI-written container names across incremental updates.
+// Labels match derived containers by member overlap, so stale members are
+// dropped here and a label that loses all members is removed.
+function normalizeContainerLabels(rawLabels, nodeIds, pathIndex) {
+  if (!Array.isArray(rawLabels)) return {};
+  const containerLabels = rawLabels
+    .map(label => ({
+      name: typeof label?.name === 'string' ? label.name.trim() : '',
+      nodeIds: (Array.isArray(label?.nodeIds) ? label.nodeIds : [])
+        .map(ref => resolveNodeRef(ref, nodeIds, pathIndex))
+        .filter(Boolean),
+    }))
+    .filter(label => label.name && label.nodeIds.length > 0);
+  return containerLabels.length > 0 ? { containerLabels } : {};
 }
 
 function directorySegments(filePath) {
@@ -401,12 +419,19 @@ async function main() {
   }
 
   const graphPath = join(uaDir, 'knowledge-graph.json');
+  const fingerprintPath = join(uaDir, 'fingerprints.json');
   const importMapRefreshPaths = Array.isArray(plan.importMapRefreshPaths)
     ? plan.importMapRefreshPaths
     : [];
 
+  // Rollback material: capture the previous graph before any write below. A
+  // graph save that succeeds while the fingerprint/meta patch below fails must
+  // not leave the NEW graph published with a non-zero exit — the previous
+  // code-lessons sidecar would sit beside a tour it no longer matches.
+  let previousGraph = readJson(graphPath, null);
+  let graphWritten = false;
+
   if (plan.action === 'SKIP') {
-    const previousGraph = readJson(graphPath);
     if (!previousGraph || !Array.isArray(previousGraph.nodes) || !Array.isArray(previousGraph.edges)) {
       throw new Error('knowledge-graph.json is missing or invalid; baseline not advanced');
     }
@@ -419,10 +444,11 @@ async function main() {
       ...refreshedGraph,
       project: projectMetadata(previousGraph.project, plan, scan),
     });
+    graphWritten = true;
   }
 
   if (plan.action !== 'SKIP') {
-    const previousGraph = readJson(graphPath, {});
+    const baseGraph = previousGraph ?? {};
     const assembledRaw = readJson(join(intermediateDir, 'assembled-graph.json'));
     if (!assembledRaw || !Array.isArray(assembledRaw.nodes) || !Array.isArray(assembledRaw.edges)) {
       throw new Error('assembled-graph.json is missing or invalid; baseline not advanced');
@@ -451,16 +477,16 @@ async function main() {
     }
     const rawLayers = plan.rerunArchitecture
       ? readJson(join(intermediateDir, 'layers.json'))
-      : previousGraph.layers ?? [];
+      : baseGraph.layers ?? [];
     const rawTour = plan.rerunTour
       ? readJson(join(intermediateDir, 'tour.json'))
-      : previousGraph.tour ?? [];
+      : baseGraph.tour ?? [];
     const now = new Date().toISOString();
     const graph = {
-      ...previousGraph,
-      version: previousGraph.version ?? '1.0.0',
+      ...baseGraph,
+      version: baseGraph.version ?? '1.0.0',
       project: {
-        ...projectMetadata(previousGraph.project, plan, scan),
+        ...projectMetadata(baseGraph.project, plan, scan),
         analyzedAt: now,
       },
       nodes: assembled.nodes,
@@ -476,10 +502,37 @@ async function main() {
     process.stderr.write(`${formatSymbolReport(symbolReport)}\n`);
     if (!symbolReport.ok) throw new Error('Unresolved incremental symbol loss; baseline not advanced');
     atomicWriteJson(graphPath, graph);
+    graphWritten = true;
   }
 
-  patchFingerprints(uaDir, plan, patch);
-  advanceMeta(uaDir, plan, scan.totalFiles);
+  // Snapshot the fingerprint store before patching so a failure below can
+  // restore both the old graph and the old fingerprint baseline. Restoring
+  // fingerprints matters as much as restoring the graph: a stale graph with
+  // fresh fingerprints would make the next run misclassify every change.
+  // The snapshot read happens INSIDE the try: a corrupted store must also
+  // roll the graph back instead of escaping with the new graph published.
+  const fingerprintsExisted = existsSync(fingerprintPath);
+  let fingerprintBackup = null;
+  try {
+    if (fingerprintsExisted) fingerprintBackup = readJson(fingerprintPath);
+    patchFingerprints(uaDir, plan, patch);
+    advanceMeta(uaDir, plan, scan.totalFiles);
+  } catch (error) {
+    if (graphWritten) {
+      if (previousGraph && Array.isArray(previousGraph.nodes)) {
+        atomicWriteJson(graphPath, previousGraph);
+      }
+      if (fingerprintsExisted && fingerprintBackup && typeof fingerprintBackup === 'object' && !Array.isArray(fingerprintBackup)) {
+        atomicWriteJson(fingerprintPath, fingerprintBackup);
+      } else if (!fingerprintsExisted && existsSync(fingerprintPath)) {
+        // The patch created the store after the graph was written; a failed
+        // run must not leave fresh fingerprints beside a rolled-back graph.
+        rmSync(fingerprintPath);
+      }
+      process.stderr.write('Rolled back knowledge-graph.json and fingerprints.json to their previous state\n');
+    }
+    throw error;
+  }
   process.stdout.write(
     `Incremental update finalized: ${plan.action}; analyzedFiles=${scan.totalFiles}\n`,
   );
@@ -505,8 +558,10 @@ if (isCliEntry()) {
 
 export {
   assignLayers,
+  buildPathIndex,
   commonParentDepth,
   hasAnalyzedFileCoverage,
+  normalizeAssembled,
   normalizeTour,
   refreshGraphImports,
 };

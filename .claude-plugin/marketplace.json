@@ -8,9 +8,9 @@
   "plugins": [
     {
       "name": "my-skills",
-      "description": "30 curated engineering, design, and comprehension skills vendored from nine upstream repositories",
+      "description": "37 curated engineering, design, and comprehension skills vendored from nine upstream repositories",
       "source": "./plugins/my-skills",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "development",
       "tags": ["skills", "workflow", "design", "diagrams", "code-quality"]
     }

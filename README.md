@@ -1,7 +1,7 @@
 # claude-skills
 
 A personal [Claude Code](https://claude.com/claude-code) marketplace. One plugin,
-**30 curated skills**, one install command.
+**37 curated skills**, one install command.
 
 ## Install
 
@@ -10,7 +10,7 @@ A personal [Claude Code](https://claude.com/claude-code) marketplace. One plugin
 /plugin install my-skills@claude-skills
 ```
 
-Then restart Claude Code (or run `/reload-plugins`). That's it — all 30 skills
+Then restart Claude Code (or run `/reload-plugins`). That's it — all 37 skills
 are available. Adding a skill later means committing it here and running
 `/plugin update`; there is never a per-skill install.
 
@@ -20,10 +20,13 @@ Skills are curated, not exhaustive: one skill per job, no duplicates, nothing
 that needs a paid backend. They come from nine upstream projects — see
 [NOTICE.md](NOTICE.md) for exact provenance and commit pins.
 
-### Workflow (8) — from [obra/superpowers](https://github.com/obra/superpowers)
+### Workflow (15) — from [obra/superpowers](https://github.com/obra/superpowers)
 `brainstorming` · `writing-plans` · `executing-plans` · `test-driven-development`
 · `systematic-debugging` · `verification-before-completion` ·
-`requesting-code-review` · `using-git-worktrees`
+`requesting-code-review` · `using-git-worktrees` · `subagent-driven-development`
+· `dispatching-parallel-agents` · `receiving-code-review` ·
+`finishing-a-development-branch` · `writing-skills` · `using-superpowers` ·
+`diagnosing-superpowers`
 
 ### Engineering practice (10) — from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
 `api-and-interface-design` · `code-review-and-quality` · `security-and-hardening`
@@ -56,10 +59,15 @@ Most skills are pure instructions and need nothing. Two exceptions:
 
 ## Heads-up: superpowers overlap
 
-8 of these skills are vendored from `superpowers`. If you also have
+All 15 `superpowers` skills are vendored here. If you also have
 `superpowers@claude-plugins-official` installed, you will get **two copies** of
-`brainstorming`, `test-driven-development`, and the rest. Pick one source —
-either uninstall the official plugin, or drop those 8 directories from here.
+`brainstorming`, `test-driven-development`, and the rest. This marketplace is
+meant to be the single source: don't install the official plugin alongside it
+(`claude plugin uninstall superpowers@claude-plugins-official --scope project`
+removes a project-level copy).
+
+`archify` runs a bounded update check when it finishes a diagram and may print
+an update notice. It never installs updates itself; refresh it here instead.
 
 ## Licensing
 
@@ -77,7 +85,7 @@ deliberate step.
 .claude-plugin/marketplace.json   marketplace manifest
 plugins/my-skills/
   .claude-plugin/plugin.json      plugin manifest
-  skills/<name>/SKILL.md          30 skills
+  skills/<name>/SKILL.md          37 skills
 licenses/                         upstream license texts
 NOTICE.md                         provenance + modifications
 ```
