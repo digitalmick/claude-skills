@@ -12,7 +12,32 @@
       "source": "./plugins/my-skills",
       "version": "0.2.0",
       "category": "development",
-      "tags": ["skills", "workflow", "design", "diagrams", "code-quality"]
+      "tags": [
+        "skills",
+        "workflow",
+        "design",
+        "diagrams",
+        "code-quality"
+      ]
+    },
+    {
+      "name": "creative-writing-skills",
+      "description": "Agents and skills for fiction projects by haowjy, linked (not vendored) at v0.9.11. Start with the muse agent: it brainstorms, drafts, critiques, and keeps your story's knowledge base.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/haowjy/creative-writing-skills.git",
+        "path": "plugin/claude",
+        "ref": "v0.9.11",
+        "sha": "8d39b73661f4413984eef52b1d816e3788c979d9"
+      },
+      "version": "0.9.11",
+      "category": "writing",
+      "tags": [
+        "creative-writing",
+        "fiction",
+        "agents",
+        "skills"
+      ]
     }
   ]
 }

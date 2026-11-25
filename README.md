@@ -1,7 +1,7 @@
 # claude-skills
 
-A personal [Claude Code](https://claude.com/claude-code) marketplace. One plugin,
-**37 curated skills**, one install command.
+A personal [Claude Code](https://claude.com/claude-code) marketplace. One main
+plugin with **37 curated skills**, plus an optional creative-writing plugin.
 
 ## Install
 
@@ -11,8 +11,13 @@ A personal [Claude Code](https://claude.com/claude-code) marketplace. One plugin
 ```
 
 Then restart Claude Code (or run `/reload-plugins`). That's it — all 37 skills
-are available. Adding a skill later means committing it here and running
-`/plugin update`; there is never a per-skill install.
+are available. Adding a skill later means committing it here, then running this
+in a terminal; there is never a per-skill install:
+
+```
+claude plugin marketplace update claude-skills
+claude plugin update my-skills@claude-skills
+```
 
 ## What's inside
 
@@ -46,6 +51,23 @@ that needs a paid backend. They come from nine upstream projects — see
 `archify` — [tt-a1i/archify](https://github.com/tt-a1i/archify) · self-contained, needs Node
 `graphify` — [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) · **requires the CLI** (below)
 `understand` — [Egonex-AI/Understand-Anything](https://github.com/Egonex-AI/Understand-Anything)
+
+## Optional: creative-writing-skills
+
+[haowjy/creative-writing-skills](https://github.com/haowjy/creative-writing-skills)
+— 25 skills and 17 agents for fiction projects. Start with the `muse` agent.
+It is a **separate plugin** that this marketplace *links to* at upstream release
+`v0.9.11`; nothing is copied into this repo. Install it only in projects where
+you write:
+
+```
+claude plugin install creative-writing-skills@claude-skills --scope project
+```
+
+It is kept separate because its parts reference each other as
+`creative-writing-skills:<name>` (that only resolves under its own plugin name),
+and because 15 of its parts come from `haowjy/meridian-base`, which has no
+license and so can't be vendored here.
 
 ## External dependencies
 

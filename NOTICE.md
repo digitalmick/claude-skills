@@ -80,6 +80,21 @@ newer commit and update the SHA below.
 - **Upstream path:** `graphify/skill.md (branch v8)`
 - **Skills vendored (1):** `graphify`
 
+## Linked plugins (not vendored)
+
+These are listed in `marketplace.json` but fetched from upstream at install
+time. No files from them are redistributed in this repo.
+
+### haowjy/creative-writing-skills
+
+- **License:** Apache-2.0 (upstream `LICENSE`). Its bundled `meridian-base`
+  parts (10 skills, 5 agents) come from `haowjy/meridian-base`, which has no
+  license file — one reason this plugin is linked rather than vendored.
+- **Source:** `git-subdir` at `plugin/claude/`, tag `v0.9.11`, commit
+  `8d39b73661f4413984eef52b1d816e3788c979d9`. To move it forward, update `ref`,
+  `sha`, and `version` in `.claude-plugin/marketplace.json`.
+- **Contents at that commit:** 25 skills, 17 agents.
+
 ## Modifications
 
 Apache-2.0 section 4(b) requires stating changes. Changes made to vendored files:
